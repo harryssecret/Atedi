@@ -7,7 +7,7 @@ use Twig\Extension\AbstractExtension;
 
 class AppExtension extends AbstractExtension
 {
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
             new TwigFunction('intervStatus', [$this, 'statusFinder']),
@@ -45,21 +45,21 @@ class AppExtension extends AbstractExtension
 
     public function completePrice($price)
     {
-        if (strpos($price,'.')) {
+        if (strpos($price, '.')) {
             $delimiter = '.';
-        } else if (strpos($price,',')) {
+        } else if (strpos($price, ',')) {
             $delimiter = ',';
         } else {
             $delimiter = " ";
         }
 
-        $taskPrice = explode($delimiter,$price);
+        $taskPrice = explode($delimiter, $price);
         $taskEuro = $taskPrice[0];
 
         if (count($taskPrice) > 1) {
             $taskCents = intval($taskPrice[1]);
             if (strlen($taskPrice[1]) == 1) {
-                $taskCents = $taskCents*10;
+                $taskCents = $taskCents * 10;
             }
         } else {
             $taskCents = 0;
@@ -67,9 +67,9 @@ class AppExtension extends AbstractExtension
 
         $taskCents = strval($taskCents);
         if (strlen($taskCents) == 1) {
-            $taskCents = '0'.$taskCents;
+            $taskCents = '0' . $taskCents;
         }
-        $price = $taskEuro.','.$taskCents;
+        $price = $taskEuro . ',' . $taskCents;
 
         return $price;
     }

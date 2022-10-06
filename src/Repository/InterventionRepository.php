@@ -19,7 +19,7 @@ class InterventionRepository extends ServiceEntityRepository
         parent::__construct($registry, Intervention::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],
@@ -33,8 +33,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->andWhere("i.status != 'Terminée'")
             ->orderBy('i.status', 'ASC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findAllOngoingByDate()
@@ -43,8 +42,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->andWhere("i.status != 'Terminée'")
             ->orderBy('i.deposit_date', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findOneById($id): ?Intervention
@@ -53,8 +51,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->andWhere('i.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
 
     public function findAllByClient($id)
@@ -64,8 +61,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->orderBy('i.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findAllByEquipment($id)
@@ -75,8 +71,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->orderBy('i.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findAllByOperatingSystem($id)
@@ -86,8 +81,7 @@ class InterventionRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->orderBy('i.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findAllByTask($id)
@@ -97,7 +91,6 @@ class InterventionRepository extends ServiceEntityRepository
             ->setParameter('id', $id)
             ->orderBy('i.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 }

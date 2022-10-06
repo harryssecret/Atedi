@@ -19,7 +19,7 @@ class BookletRepository extends ServiceEntityRepository
         parent::__construct($registry, Booklet::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],
@@ -33,7 +33,6 @@ class BookletRepository extends ServiceEntityRepository
             ->andWhere('b.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
 }

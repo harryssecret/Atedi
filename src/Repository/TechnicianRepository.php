@@ -19,7 +19,7 @@ class TechnicianRepository extends ServiceEntityRepository
         parent::__construct($registry, Technician::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],
