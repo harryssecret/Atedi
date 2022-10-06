@@ -1,0 +1,61 @@
+lockfileVersion: 5.4
+
+specifiers:
+  '@prettier/plugin-php': ^0.19.1
+  prettier: ^2.7.1
+
+dependencies:
+  '@prettier/plugin-php': 0.19.1_prettier@2.7.1
+  prettier: 2.7.1
+
+packages:
+
+  /@prettier/plugin-php/0.19.1_prettier@2.7.1:
+    resolution: {integrity: sha512-faoQX6QF4JZ0xJT+FRkMU7JnUTqVFRSwz7oKYuKgjY6u8VHSURlRXVkP4UyXxsTPAGjVJpNh7JseKkpK1DZziw==}
+    peerDependencies:
+      prettier: ^1.15.0 || ^2.0.0
+    dependencies:
+      linguist-languages: 7.21.0
+      mem: 8.1.1
+      php-parser: 3.1.1
+      prettier: 2.7.1
+    dev: false
+
+  /linguist-languages/7.21.0:
+    resolution: {integrity: sha512-KrWJJbFOvlDhjlt5OhUipVlXg+plUfRurICAyij1ZVxQcqPt/zeReb9KiUVdGUwwhS/2KS9h3TbyfYLA5MDlxQ==}
+    dev: false
+
+  /map-age-cleaner/0.1.3:
+    resolution: {integrity: sha512-bJzx6nMoP6PDLPBFmg7+xRKeFZvFboMrGlxmNj9ClvX53KrmvM5bXFXEWjbz4cz1AFn+jWJ9z/DJSz7hrs0w3w==}
+    engines: {node: '>=6'}
+    dependencies:
+      p-defer: 1.0.0
+    dev: false
+
+  /mem/8.1.1:
+    resolution: {integrity: sha512-qFCFUDs7U3b8mBDPyz5EToEKoAkgCzqquIgi9nkkR9bixxOVOre+09lbuH7+9Kn2NFpm56M3GUWVbU2hQgdACA==}
+    engines: {node: '>=10'}
+    dependencies:
+      map-age-cleaner: 0.1.3
+      mimic-fn: 3.1.0
+    dev: false
+
+  /mimic-fn/3.1.0:
+    resolution: {integrity: sha512-Ysbi9uYW9hFyfrThdDEQuykN4Ey6BuwPD2kpI5ES/nFTDn/98yxYNLZJcgUAKPT/mcrLLKaGzJR9YVxJrIdASQ==}
+    engines: {node: '>=8'}
+    dev: false
+
+  /p-defer/1.0.0:
+    resolution: {integrity: sha512-wB3wfAxZpk2AzOfUMJNL+d36xothRSyj8EXOa4f6GMqYDN9BJaaSISbsk+wS9abmnebVw95C2Kb5t85UmpCxuw==}
+    engines: {node: '>=4'}
+    dev: false
+
+  /php-parser/3.1.1:
+    resolution: {integrity: sha512-HUxWIWpJoGhnSVzM6nPI1O2RePd7eJKzJoL3VZr6/KUUdcHKBex2Cp7p6pWOV1WxgKI/oYgRPMywwLCP789OYA==}
+    dev: false
+
+  /prettier/2.7.1:
+    resolution: {integrity: sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    dev: false
