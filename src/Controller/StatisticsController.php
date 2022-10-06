@@ -11,6 +11,7 @@ use Ob\HighchartsBundle\Highcharts\Highchart;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\InterventionReportRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -21,7 +22,7 @@ class StatisticsController extends AbstractController
     /**
      * @Route("/", name="statistics_index", methods={"GET"})
      */
-    public function index(InterventionRepository $ir, TechnicianRepository $ter, TaskRepository $tar, EquipmentRepository $er, OperatingSystemRepository $osr)
+    public function index(InterventionReportRepository $irr, InterventionRepository $ir, TechnicianRepository $ter, TaskRepository $tar, EquipmentRepository $er, OperatingSystemRepository $osr)
     {
         // Load interventions by technicians chart
         $chart1 = new Highchart();
@@ -55,7 +56,7 @@ class StatisticsController extends AbstractController
         $technicians = $ter->findAll();
 
         foreach ( $technicians as $technician ) {
-            $interventions = $ir->findAllByTechnician($technician->getId());
+            $interventions = $irr->findAllByTechnician($technician->getId());
             $count = count($interventions);
             $name = $technician->getLastName().' '.$technician->getFirstName();
 
