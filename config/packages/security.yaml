@@ -12,9 +12,14 @@ security:
                 class: App\Entity\User
                 property: email
     firewalls:
+        secured_area:
+            form_login:
+                enable_csrf: true
+                
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         main:
             lazy: true
             provider: app_user_provider
@@ -43,4 +48,5 @@ security:
         ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
          
     password_hashers:
+        App\Entity\User: 'auto'
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
