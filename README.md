@@ -1,64 +1,55 @@
-ATEDI
-=========
+# Atedi
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-black-magic.svg)](https://forthebadge.com)
 
-# Download
-Open your CMD and copy this line : 
-```
+Atedi is a software made to manage quotation for IT companies. It was made by Dylan Hochet and Remi Leyssenne, but this fork adds some features such as compatibility with Dolibarr.
 
+# Table of Contents
+1. [Installation](#installation)
+    1. [With Docker](#installation-with-docker-recommended)
+    2. [Manual](#manual-installation)
+
+# Installation
+
+## Installation with Docker (recommended)
+A docker image will be provided when the project will be updated to the latest docker version. Please follow the issue related to it.
+
+## Manual installation
+First, make sure to have `php8.1` installed with `curl`, and `xml` extensions.
+
+```bash
 git clone https://github.com/ndlaprovidence/Atedi.git
-```
-
-# Install
-When download is complete, open your CMD 
-and execute these commands :
-```
 cd atedi
-
 composer install
 ```
-(Composer is free to download at this link : https://getcomposer.org/download/)
 
-# Create database
+### Database creation
+Make sure to have MySQL installed on your machine, and create a dedicated database and user
 
-Start a DBMS like MySQL included into Wamp server (free to download at this link : http://www.wampserver.com/)
-
-Then copy .env file to .env.local 
-and update .env.local tu configure your database :
-```
-DATABASE_URL=mysql://db_user:db_password@127.0.0.1:3306/atedi
-
-```
-Replace db_user with : **root**
-
-Replace db_password with : (let it blank)
-
-
-Finaly, execute this line :
-```
-php bin/console doctrine:database:create
+```sql
+CREATE DATABASE atedi;
+CREATE USER 'atediUser'@'localhost' IDENTIFIED BY 'changethispass';
+GRANT ALL PRIVILEGES ON atedi.* TO 'atediUser'@'localhost';
+FLUSH PRIVILEGES; 
 ```
 
-# Load database
-There are some default datau that you can load into the database. Open your CMD in the Atedi directory and copy these lines :
+Copy .env file to .env.local and update them with your database credentials :
 ```
+DATABASE_URL=mysql://changeme:changeme@127.0.0.1:3306/atedi
+```
+Then, apply the migrations :
+```bash
+# php bin/console doctrine:database:create // unecessary if you have created the database
 php bin/console doctrine:migrations:migrate
 ```
-```
+
+Atedi comes with some test data that you can load to play with the software, you just nedd to run the following command.
+```bash
 php bin/console doctrine:fixtures:load
 ```
 
-# Run
+### Launch it
 Once you've installed everything, execute this line in the atedi directory :
 ```
 php -S localhost:8000 -t public
-=======
-
 ```
-You can access to your local server with localhost:8000
-
-# Sign in
-Next, you will have to connect with the default admin account.
-
-* Email : admin@gmail.com
-
-* Password : admin
+Then, go the the url you've chosen and login with the following credentials : `admin@gmail.com` / `admin`. Don't forget to change the default password.
