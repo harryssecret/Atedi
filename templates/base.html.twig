@@ -2,117 +2,18 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Atedi{% endblock %}</title>
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
         {% block stylesheets %}
-            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-            <link rel="stylesheet" href="{{ asset('assets/scss/style.css') }}"/>
+            {{ encore_entry_link_tags('app') }}
         {% endblock %}
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-            <script src="https://kit.fontawesome.com/f5c457ed93.js" crossorigin="anonymous"></script>
-        {% block javascripts %}{% endblock %}
+
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
     </head>
-
     <body>
-
-    {% if app.request.get('_route') != 'app_login' %}
-        <nav class="navbar navbar-expand-md navbar-dark">
-            <a class="navbar-brand font-weight-bold" href="/">Atedi</a>
-
-            <div class="collapse navbar-collapse">
-                
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item {% if app.request.get('_route') starts with 'index' %} active {% endif %} px-4">
-                        <a class="nav-link" href="/">Accueil</a>
-                    </li>
-                    <li class="nav-item {% if app.request.get('_route') starts with 'intervention' %} active {% endif %} px-4">
-                        <a class="nav-link" href="{{ path('intervention_index') }}">Interventions</a>
-                    </li>
-                    <li class="nav-item {% if app.request.get('_route') starts with 'client' %} active {% endif %} px-4">
-                        <a class="nav-link" href="{{ path('client_index') }}">Clients</a>
-                    </li>
-
-                    <li class="nav-item dropdown 
-                        {% if (app.request.get('_route') starts with 'equipment') 
-                            or (app.request.get('_route') starts with 'operating_system') 
-                            or (app.request.get('_route') starts with 'task') 
-                            or (app.request.get('_route') starts with 'technician') 
-                            or (app.request.get('_route') starts with 'user') 
-                        %} active {% endif %} px-4">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Outils</a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'equipment' %} active {% endif %}" href="{{ path('equipment_index') }}">Equipements</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'operating_system' %} active {% endif %}" href="{{ path('operating_system_index') }}">Systèmes d'exploitations</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'task' %} active {% endif %}" href="{{ path('task_index') }}">Tâches</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'technician' %} active {% endif %}" href="{{ path('technician_index') }}">Techniciens</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'software' %} active {% endif %}" href="{{ path('software_index') }}">Logiciels</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'booklet' %} active {% endif %}" href="{{ path('booklet_index') }}">Brochures</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'action' %} active {% endif %}" href="{{ path('action_index') }}">Actions</a>
-                            <hr>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'user' %} active {% endif %}" href="{{ path('user_index') }}">Utilisateurs</a>
-                            <a class="dropdown-item {% if app.request.get('_route') starts with 'statistics' %} active {% endif %}" href="{{ path('statistics_index') }}">Statistiques</a>
-                        </div>
-                    </li>
-                    <li class="nav-item px-2">
-                        <a class="nav-link" href="" data-toggle="modal" data-target="#about"><i class="fas fa-info-circle"></i></a>
-                    </li>
-                    <li class="nav-item px-2">
-                        <a class="nav-link" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i></a>
-                    </li>
-                </ul>
-                
-            </div> 
-        </nav>
-
-    {% endif %}
-
-        <main role="main" class="container">
-
-            <div class="modal fade" id="about">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title"><i class="fas fa-info-circle mr-3"></i>A propos de Atedi</h2>
-                            <button type="button" class="close" data-dismiss="modal">
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Atedi est un logiciel libre sous licence <a href='https://cecill.info/' target="_blank"><u>CeCILL</u></a>.</p>
-                            <p>Son but est de faciliter la gestion des interventions techniques sur du matériel informatique.</p>
-                            <p></p>
-                                
-                                                
-                            <hr>
-                            <h5>Logiciel développé par :</h5>
-                            <p>2020 - HOCHET Dylan & LEYSENNE Rémi</p>
-                            <hr>
-                            <p>Merci aux differents développeurs des bibliothèques utilisées</p>
-                            <p>
-                                <a href='https://github.com/dompdf/dompdf' target="_blank"><u>dompdf</u></a></br>
-                                <a href='https://github.com/marcaube/ObHighchartsBundle' target="_blank"><u>ObHighchartsBundle</u></a>
-                            </p>
-                            <p>Et bien évidemment à <a href='https://github.com/symfony/symfony/' target="_blank"><u>Symfony</u></a> sans quoi ce projet n'aurait pas été possible !</p>
-                            <hr>
-                            <h5>Version</h5>
-                            <p>1.0.0</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="starter-template mt-5 mb-5">
-                {% block body %}{% endblock %}
-            </div>
-
-            {% if app.request.get('_route') == 'app_login' %}
-                <h4 class="h4 text-center fixed-bottom">©{{ "now"|date("Y") }} - Atedi</h4>
-            {% endif %}
-
-        </main>
-        
+        {% block body %}{% endblock %}
     </body>
 </html>
-
