@@ -455,9 +455,6 @@
     "symfony/polyfill-php72": {
         "version": "v1.23.0"
     },
-    "symfony/polyfill-php73": {
-        "version": "v1.23.0"
-    },
     "symfony/polyfill-php80": {
         "version": "v1.23.1"
     },
@@ -505,9 +502,6 @@
         "version": "v4.4.34"
     },
     "symfony/security-csrf": {
-        "version": "v4.4.27"
-    },
-    "symfony/security-guard": {
         "version": "v4.4.27"
     },
     "symfony/security-http": {
