@@ -20,4 +20,3 @@
 ###< phpunit/phpunit ###
 
 node_modules/
-.env
