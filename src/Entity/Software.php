@@ -80,7 +80,7 @@ class Software
     /**
      * @return Collection|SoftwareInterventionReport[]
      */
-    public function getSoftwareInterventionReports(): Collection
+    public function getSoftwareInterventionReports(): \Doctrine\Common\Collections\Collection
     {
         return $this->softwareInterventionReports;
     }

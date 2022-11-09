@@ -61,7 +61,7 @@ class Equipment
     /**
      * @return Collection|Intervention[]
      */
-    public function getInterventions(): Collection
+    public function getInterventions(): \Doctrine\Common\Collections\Collection
     {
         return $this->interventions;
     }

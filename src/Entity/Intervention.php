@@ -92,7 +92,7 @@ class Intervention
         $this->setStatus('En attente');
         $this->billing_lines = new ArrayCollection();
     }
-    
+
 
     public function getId(): ?int
     {
@@ -162,7 +162,7 @@ class Intervention
     /**
      * @return Collection|Task[]
      */
-    public function getTasks(): Collection
+    public function getTasks(): \Doctrine\Common\Collections\Collection
     {
         return $this->tasks;
     }
@@ -248,7 +248,7 @@ class Intervention
     /**
      * @return Collection|BillingLine[]
      */
-    public function getBillingLines(): Collection
+    public function getBillingLines(): \Doctrine\Common\Collections\Collection
     {
         return $this->billing_lines;
     }

@@ -162,7 +162,7 @@ class InterventionReport
     /**
      * @return Collection|Booklet[]
      */
-    public function getBooklets(): Collection
+    public function getBooklets(): \Doctrine\Common\Collections\Collection
     {
         return $this->booklets;
     }
@@ -200,7 +200,7 @@ class InterventionReport
     /**
      * @return Collection|Action[]
      */
-    public function getActions(): Collection
+    public function getActions(): \Doctrine\Common\Collections\Collection
     {
         return $this->actions;
     }
@@ -226,7 +226,7 @@ class InterventionReport
     /**
      * @return Collection|SoftwareInterventionReport[]
      */
-    public function getSoftwareInterventionReports(): Collection
+    public function getSoftwareInterventionReports(): \Doctrine\Common\Collections\Collection
     {
         return $this->softwareInterventionReports;
     }
@@ -269,7 +269,7 @@ class InterventionReport
     /**
      * @return Collection|Technician[]
      */
-    public function getTechnicians(): Collection
+    public function getTechnicians(): \Doctrine\Common\Collections\Collection
     {
         return $this->technicians;
     }

@@ -93,7 +93,7 @@ class Technician
     /**
      * @return Collection|InterventionReport[]
      */
-    public function getInterventionReports(): Collection
+    public function getInterventionReports(): \Doctrine\Common\Collections\Collection
     {
         return $this->interventionReports;
     }
