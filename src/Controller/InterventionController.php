@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\SoftwareInterventionReportRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("/intervention")
@@ -32,10 +33,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class InterventionController extends AbstractController
 {
     private AtediHelper $AtediHelper;
+    private HttpClientInterface $client;
 
-    public function __construct(AtediHelper $AtediHelper)
+    public function __construct(AtediHelper $AtediHelper, HttpClientInterface $client)
     {
         $this->atediHelper = $AtediHelper;
+        $this->client = $client;
     }
 
     /**
@@ -88,6 +91,10 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
+        $dolibarrApiKey = $this->getParameter('%env(DOLIBARR_KEY)%');
+        $dolibarrApiUrl = $this->getParameter('DOLIBARR_API_URL');
+
+        $response = $this->client->request()
     }
 
     /**
