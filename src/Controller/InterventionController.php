@@ -34,11 +34,13 @@ class InterventionController extends AbstractController
 {
     private AtediHelper $AtediHelper;
     private HttpClientInterface $client;
+    private string $dolibarrApiUrl;
 
     public function __construct(AtediHelper $AtediHelper, HttpClientInterface $client)
     {
         $this->atediHelper = $AtediHelper;
         $this->client = $client;
+        $dolibarrApiUrl = $this->getParameter("DOLIBARR_API_URL");
     }
 
     /**
@@ -91,10 +93,20 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
-        $dolibarrApiKey = $this->getParameter('%env(DOLIBARR_KEY)%');
-        $dolibarrApiUrl = $this->getParameter('DOLIBARR_API_URL');
+        $response = $this->client->request("POST", $this->dolibarrApiUrl . "/invoices", ['json' => [
+            ''
+        ]]);
+        if ($response->getStatusCode() == 200) {
+            echo "Facture créée.";
+        } else {
+        }
+    }
 
-        $response = $this->client->request()
+    private function createThirdParty()
+    {
+        $response = $this->client->request("POST", $this->dolibarrApiUrl . "/thirdparties", ['json' => [
+            ''
+        ]]);
     }
 
     /**
