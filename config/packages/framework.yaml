@@ -15,10 +15,9 @@ framework:
     scoped_clients:
       dolibarr_api:
         base_uri: "%env(DOLIBARR_API_URL)%"
-        default_options:
-          headers:
-            DOLAPIKEY: "%env(DOLIBARR_KEY)%"
-            Accept: "application/json"
+        headers:
+          DOLAPIKEY: "%env(DOLIBARR_KEY)%"
+          Accept: "application/json"
 
   #esi: true
   #fragments: true
