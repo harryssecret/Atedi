@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Booklet;
 use App\Form\BookletType;
 use App\Repository\BookletRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,23 +29,23 @@ class BookletController extends AbstractController
     /**
      * @Route("/new", name="booklet_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
         $booklet = new Booklet();
         $form = $this->createForm(BookletType::class, $booklet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($booklet);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'report') {
+            if ($request->query->has('s') == 'report') {
                 return $this->redirectToRoute('intervention_report', [
                     'id' => $request->query->get('id'),
                 ]);
             }
-            
+
             return $this->redirectToRoute('booklet_index');
         }
 
@@ -57,13 +58,15 @@ class BookletController extends AbstractController
     /**
      * @Route("/{id}/edit", name="booklet_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Booklet $booklet): Response
+    public function edit(Request $request, Booklet $booklet, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(BookletType::class, $booklet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $entityManager = $doctrine->getManager();
+            $entityManager->flush();
+
 
             return $this->redirectToRoute('booklet_index');
         }
@@ -77,10 +80,10 @@ class BookletController extends AbstractController
     /**
      * @Route("/{id}", name="booklet_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Booklet $booklet): Response
+    public function delete(Request $request, Booklet $booklet, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$booklet->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $booklet->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($booklet);
             $entityManager->flush();
         }

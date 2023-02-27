@@ -24,6 +24,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\SoftwareInterventionReportRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use Error;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -32,7 +34,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class InterventionController extends AbstractController
 {
-    private AtediHelper $AtediHelper;
+    private AtediHelper $atediHelper;
     private HttpClientInterface $client;
     private string $dolibarrApiUrl;
 
@@ -58,7 +60,7 @@ class InterventionController extends AbstractController
      */
     public function new(Request $request, ClientRepository $cr, EntityManagerInterface $em): Response
     {
-        $this->em = $em;
+
 
         $intervention = new Intervention();
         $interventionReport = new InterventionReport();
@@ -69,16 +71,16 @@ class InterventionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $interventionReport->setStep(1);
-            $this->em->persist($interventionReport);
-            $this->em->flush();
+            $em->persist($interventionReport);
+            $em->flush();
 
             $intervention->setInterventionReport($interventionReport);
 
             $totalPrice = $this->atediHelper->strTotalPrice($intervention);
 
             $intervention->setTotalPrice($totalPrice);
-            $this->em->persist($intervention);
-            $this->em->flush();
+            $em->persist($intervention);
+            $em->flush();
 
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
@@ -114,7 +116,7 @@ class InterventionController extends AbstractController
      */
     public function show(Request $request, Intervention $intervention, EntityManagerInterface $em, SoftwareRepository $sr, ActionRepository $ar, SoftwareInterventionReportRepository $sirr): Response
     {
-        $this->em = $em;
+        $em = $em;
         $theStatus = $intervention->getStatus();
 
         if ($request->request->has('status')) {
@@ -140,15 +142,15 @@ class InterventionController extends AbstractController
                     case "Terminée":
                         if ($intervention->getInterventionReport()->getStep() == 8 && $intervention->getReturnDate()) {
                             $intervention->setStatus($newStatus);
-                            $this->em->persist($intervention);
-                            $this->em->flush();
+                            $em->persist($intervention);
+                            $em->flush();
                             return $this->redirectToRoute('index');
                         }
                         break;
                 }
 
-                $this->em->persist($intervention);
-                $this->em->flush();
+                $em->persist($intervention);
+                $em->flush();
             }
         }
 
@@ -156,8 +158,8 @@ class InterventionController extends AbstractController
             $returnDate = $request->request->get('return-date');
             $intervention->setReturnDate(new \DateTime());
 
-            $this->em->persist($intervention);
-            $this->em->flush();
+            $em->persist($intervention);
+            $em->flush();
         }
 
         if ($request->request->has('download')) {
@@ -250,7 +252,7 @@ class InterventionController extends AbstractController
      */
     public function report(Request $request, EntityManagerInterface $em, Intervention $intervention, SoftwareRepository $sr, BookletRepository $br, ActionRepository $ar, SoftwareInterventionReportRepository $sirr, BillingLineRepository $blr, TechnicianRepository $tr): Response
     {
-        $this->em = $em;
+        $em = $em;
 
         $interventionReport = $intervention->getInterventionReport();
         $step = $interventionReport->getStep();
@@ -262,8 +264,8 @@ class InterventionController extends AbstractController
             switch ($setup) {
                 case "next":
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -272,8 +274,8 @@ class InterventionController extends AbstractController
 
                 case "previous":
                     $interventionReport->setStep($step - 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -282,8 +284,8 @@ class InterventionController extends AbstractController
 
                 case "restart":
                     $interventionReport->setStep(1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -306,23 +308,27 @@ class InterventionController extends AbstractController
                 foreach ($irTechnicians as $irTechnician) {
                     $interventionReport->removeTechnician($irTechnician);
                 }
-                $this->em->flush();
+                $em->flush();
 
                 if ($request->request->has('data')) {
 
                     if ($request->request->has('technicians')) {
                         $technicians = $request->request->get('technicians');
 
+                        if (!isset($technicians)) {
+                            throw new Error("\$technicians variable was not set.");
+                        }
+
                         foreach ($technicians as $technician) {
                             $technician = $tr->findOneById($technician);
                             $interventionReport->addTechnician($technician);
-                            $this->em->persist($interventionReport);
+                            $em->persist($interventionReport);
                         }
                     }
 
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -334,18 +340,19 @@ class InterventionController extends AbstractController
                 $intervention->getInterventionReport()->setSeverityProblem([]);
                 $irSoftwares = $sirr->findAllByReportAndAction($interventionReport->getId(), "Nettoyage");
                 foreach ($irSoftwares as $ele) {
-                    $this->em->remove($ele);
+                    $em->remove($ele);
                 }
                 $interventionReport->setInternalAnalysis(NULL);
-                $this->em->flush();
+                $em->flush();
 
                 $softwares = $sr->findAllByType('Nettoyage');
 
                 if ($request->request->has('data')) {
-
                     if ($request->request->has('cleaning-software')) {
-
                         $cleaningSoftwares = $request->request->get('cleaning-software');
+                        if (!isset($cleaningSoftwares)) {
+                            throw new Error("\$cleaningSoftwares was not set.");
+                        }
                         foreach ($cleaningSoftwares as $softwareId) {
 
                             $software = $sr->findOneById($softwareId);
@@ -353,7 +360,7 @@ class InterventionController extends AbstractController
                             $softwareOperation->setSoftware($software);
                             $softwareOperation->setInterventionReport($interventionReport);
                             $softwareOperation->setAction('Nettoyage');
-                            $this->em->persist($softwareOperation);
+                            $em->persist($softwareOperation);
                         }
                     }
 
@@ -370,8 +377,8 @@ class InterventionController extends AbstractController
                     $severity = $request->request->get('severity');
                     $interventionReport->setSeverity($severity);
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -384,23 +391,25 @@ class InterventionController extends AbstractController
                 foreach ($irActions as $irAction) {
                     $interventionReport->removeAction($irAction);
                 }
-                $this->em->flush();
+                $em->flush();
 
                 if ($request->request->has('data')) {
 
                     if ($request->request->has('actions')) {
                         $actions = $request->request->get('actions');
-
+                        if (!isset($actions)) {
+                            throw new Error("\$actions variable was not set.");
+                        }
                         foreach ($actions as $action) {
                             $action = $ar->findOneById($action);
                             $interventionReport->addAction($action);
-                            $this->em->persist($interventionReport);
+                            $em->persist($interventionReport);
                         }
                     }
 
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -411,16 +420,14 @@ class InterventionController extends AbstractController
             case 4:
                 $irSoftwares = $sirr->findAllByReportAndAction($interventionReport->getId(), "Installé");
                 foreach ($irSoftwares as $ele) {
-                    $this->em->remove($ele);
+                    $em->remove($ele);
                 }
                 $irSoftwares = $sirr->findAllByReportAndAction($interventionReport->getId(), "Mis à jour");
                 foreach ($irSoftwares as $ele) {
-                    $this->em->remove($ele);
+                    $em->remove($ele);
                 }
-                $this->em->flush();
-
+                $em->flush();
                 $softwares = $sr->findAll();
-
                 if ($request->request->has('data')) {
 
                     $parametersList = $request->request->all();
@@ -442,12 +449,12 @@ class InterventionController extends AbstractController
                         $softwareOperation->setSoftware($software);
                         $softwareOperation->setInterventionReport($interventionReport);
                         $softwareOperation->setAction($action);
-                        $this->em->persist($softwareOperation);
+                        $em->persist($softwareOperation);
                     }
 
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -458,7 +465,7 @@ class InterventionController extends AbstractController
             case 5:
                 $interventionReport->setWindowsInstall([]);
                 $interventionReport->setWindowsVersion(NULL);
-                $this->em->flush();
+                $em->flush();
 
                 if ($request->request->has('data')) {
 
@@ -473,8 +480,8 @@ class InterventionController extends AbstractController
                     }
 
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -487,22 +494,26 @@ class InterventionController extends AbstractController
                 foreach ($irBooklets as $irBooklet) {
                     $interventionReport->removeBooklet($irBooklet);
                 }
-                $this->em->flush();
+                $em->flush();
 
                 if ($request->request->has('data')) {
 
                     if ($request->request->has('booklets')) {
                         $booklets = $request->request->get('booklets');
 
+                        if (!isset($booklets)) {
+                            throw new Error("\$booklets variable was not set.");
+                        }
+
                         foreach ($booklets as $booklet) {
                             $booklet = $br->findOneById($booklet);
                             $interventionReport->addBooklet($booklet);
-                            $this->em->persist($interventionReport);
+                            $em->persist($interventionReport);
                         }
                     }
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -521,8 +532,8 @@ class InterventionController extends AbstractController
                         $interventionReport->setComment($comment);
                     }
                     $interventionReport->setStep($step + 1);
-                    $this->em->persist($interventionReport);
-                    $this->em->flush();
+                    $em->persist($interventionReport);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -540,8 +551,8 @@ class InterventionController extends AbstractController
                     $totalPrice = $this->atediHelper->strTotalPrice($intervention);
                     $intervention->setTotalPrice($totalPrice);
 
-                    $this->em->persist($intervention);
-                    $this->em->flush();
+                    $em->persist($intervention);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -549,17 +560,14 @@ class InterventionController extends AbstractController
                 }
 
                 if ($billingLineForm->isSubmitted() && $billingLineForm->isValid()) {
-
-                    $this->em = $em;
-
                     $billingLine->setIntervention($intervention);
-                    $this->em->persist($billingLine);
-                    $this->em->flush();
+                    $em->persist($billingLine);
+                    $em->flush();
 
                     $totalPrice = $this->atediHelper->strTotalPrice($intervention);
                     $intervention->setTotalPrice($totalPrice);
-                    $this->em->persist($intervention);
-                    $this->em->flush();
+                    $em->persist($intervention);
+                    $em->flush();
 
                     return $this->redirectToRoute('intervention_report', [
                         'id' => $intervention->getId(),
@@ -581,7 +589,7 @@ class InterventionController extends AbstractController
     /**
      * @Route("/{id}/edit", name="intervention_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Intervention $intervention): Response
+    public function edit(Request $request, Intervention $intervention, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(InterventionType::class, $intervention);
         $form->handleRequest($request);
@@ -591,7 +599,7 @@ class InterventionController extends AbstractController
             $totalPrice = $this->atediHelper->strTotalPrice($intervention);
 
             $intervention->setTotalPrice($totalPrice);
-            $this->getDoctrine()->getManager()->flush();
+            $doctrine->getManager()->flush();
 
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
@@ -607,7 +615,7 @@ class InterventionController extends AbstractController
     /**
      * @Route("/{id}", name="intervention_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, EntityManagerInterface $em, Intervention $intervention, BillingLineRepository $blr): Response
+    public function delete(Request $request, EntityManagerInterface $em, Intervention $intervention, BillingLineRepository $blr, ManagerRegistry $doctrine): Response
     {
         if ($this->isCsrfTokenValid('delete' . $intervention->getId(), $request->request->get('_token'))) {
 
@@ -617,7 +625,7 @@ class InterventionController extends AbstractController
                 $em->remove($billingLine);
             }
 
-            $em = $this->getDoctrine()->getManager();
+            $em = $doctrine()->getManager();
             $em->remove($intervention);
             $em->flush();
         }

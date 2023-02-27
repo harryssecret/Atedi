@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\InterventionReportRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -30,23 +31,23 @@ class TechnicianController extends AbstractController
     /**
      * @Route("/new", name="technician_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
         $technician = new Technician();
         $form = $this->createForm(TechnicianType::class, $technician);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($technician);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'report') {
+            if ($request->query->has('s') == 'report') {
                 return $this->redirectToRoute('intervention_report', [
                     'id' => $request->query->get('id'),
                 ]);
             }
-            
+
             return $this->redirectToRoute('technician_show', [
                 'id' => $technician->getId(),
             ]);
@@ -74,13 +75,13 @@ class TechnicianController extends AbstractController
     /**
      * @Route("/{id}/edit", name="technician_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Technician $technician): Response
+    public function edit(Request $request, Technician $technician, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(TechnicianType::class, $technician);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $doctrine->getManager()->flush();
 
             return $this->redirectToRoute('technician_show', [
                 'id' => $technician->getId(),
@@ -96,10 +97,10 @@ class TechnicianController extends AbstractController
     /**
      * @Route("/{id}", name="technician_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Technician $technician): Response
+    public function delete(Request $request, Technician $technician, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$technician->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $technician->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($technician);
             $entityManager->flush();
         }

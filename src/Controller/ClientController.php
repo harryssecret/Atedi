@@ -7,6 +7,7 @@ use App\Entity\Client;
 use App\Form\ClientType;
 use App\Repository\ClientRepository;
 use App\Repository\InterventionRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,20 +31,18 @@ class ClientController extends AbstractController
     /**
      * @Route("/new", name="client_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
-
-
         $client = new Client();
         $form = $this->createForm(ClientType::class, $client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($client);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'intervention') {
+            if ($request->query->has('s') == 'intervention') {
                 return $this->redirectToRoute('intervention_new');
             }
 
@@ -74,13 +73,13 @@ class ClientController extends AbstractController
     /**
      * @Route("/{id}/edit", name="client_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Client $client): Response
+    public function edit(Request $request, Client $client, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(ClientType::class, $client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $doctrine->getManager()->flush();
 
             return $this->redirectToRoute('client_show', [
                 'id' => $client->getId(),
@@ -96,10 +95,10 @@ class ClientController extends AbstractController
     /**
      * @Route("/{id}", name="client_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Client $client): Response
+    public function delete(Request $request, Client $client, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $client->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($client);
             $entityManager->flush();
         }

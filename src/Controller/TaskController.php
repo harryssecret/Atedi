@@ -8,6 +8,7 @@ use App\Util\AtediHelper;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\InterventionRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,6 +19,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class TaskController extends AbstractController
 {
+    private AtediHelper $atediHelper;
+
     public function __construct(AtediHelper $AtediHelper)
     {
         $this->atediHelper = $AtediHelper;
@@ -36,22 +39,22 @@ class TaskController extends AbstractController
     /**
      * @Route("/new", name="task_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
         $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-    
-            $entityManager = $this->getDoctrine()->getManager();
+
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($task);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'intervention') {
+            if ($request->query->has('s') == 'intervention') {
                 return $this->redirectToRoute('intervention_new');
             }
-            
+
             return $this->redirectToRoute('task_show', [
                 'id' => $task->getId(),
             ]);
@@ -86,19 +89,17 @@ class TaskController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $this->em = $em;
-
             $interventionsCollection = $ir->findAllByTask($task->getId());
-            foreach ( $interventionsCollection as $intervention ) {
-                if ( $intervention->getStatus() != 'Terminée' ) {
+            foreach ($interventionsCollection as $intervention) {
+                if ($intervention->getStatus() != 'Terminée') {
                     $totalPrice = $this->atediHelper->strTotalPrice($intervention);
                     $intervention->setTotalPrice($totalPrice);
-                    $this->em->persist($intervention);
+                    $em->persist($intervention);
                 }
             }
 
-            $this->em->flush();
-            
+            $em->flush();
+
             return $this->redirectToRoute('task_show', [
                 'id' => $task->getId(),
             ]);
@@ -113,10 +114,10 @@ class TaskController extends AbstractController
     /**
      * @Route("/{id}", name="task_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Task $task): Response
+    public function delete(Request $request, Task $task, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$task->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $task->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($task);
             $entityManager->flush();
         }

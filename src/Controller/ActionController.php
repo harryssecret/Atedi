@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Action;
 use App\Form\ActionType;
 use App\Repository\ActionRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,18 +29,18 @@ class ActionController extends AbstractController
     /**
      * @Route("/new", name="action_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
         $action = new Action();
         $form = $this->createForm(ActionType::class, $action);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($action);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'report') {
+            if ($request->query->has('s') == 'report') {
                 return $this->redirectToRoute('intervention_report', [
                     'id' => $request->query->get('id'),
                 ]);
@@ -57,13 +58,13 @@ class ActionController extends AbstractController
     /**
      * @Route("/{id}/edit", name="action_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Action $action): Response
+    public function edit(Request $request, Action $action, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(ActionType::class, $action);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $doctrine->getManager()->flush();
 
             return $this->redirectToRoute('action_index');
         }
@@ -77,10 +78,10 @@ class ActionController extends AbstractController
     /**
      * @Route("/{id}", name="action_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Action $action): Response
+    public function delete(Request $request, Action $action, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$action->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $action->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($action);
             $entityManager->flush();
         }

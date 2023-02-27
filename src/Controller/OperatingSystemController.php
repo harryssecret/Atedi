@@ -6,6 +6,7 @@ use App\Entity\OperatingSystem;
 use App\Form\OperatingSystemType;
 use App\Repository\InterventionRepository;
 use App\Repository\OperatingSystemRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,18 +30,18 @@ class OperatingSystemController extends AbstractController
     /**
      * @Route("/new", name="operating_system_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, ManagerRegistry $doctrine): Response
     {
         $operatingSystem = new OperatingSystem();
         $form = $this->createForm(OperatingSystemType::class, $operatingSystem);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $doctrine->getManager();
             $entityManager->persist($operatingSystem);
             $entityManager->flush();
 
-            if ( $request->query->has('s') == 'intervention') {
+            if ($request->query->has('s') == 'intervention') {
                 return $this->redirectToRoute('intervention_new');
             }
 
@@ -71,13 +72,13 @@ class OperatingSystemController extends AbstractController
     /**
      * @Route("/{id}/edit", name="operating_system_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, OperatingSystem $operatingSystem): Response
+    public function edit(Request $request, OperatingSystem $operatingSystem, ManagerRegistry $doctrine): Response
     {
         $form = $this->createForm(OperatingSystemType::class, $operatingSystem);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $doctrine->getManager()->flush();
 
             return $this->redirectToRoute('operating_system_show', [
                 'id' => $operatingSystem->getId(),
@@ -93,10 +94,10 @@ class OperatingSystemController extends AbstractController
     /**
      * @Route("/{id}", name="operating_system_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, OperatingSystem $operatingSystem): Response
+    public function delete(Request $request, OperatingSystem $operatingSystem, ManagerRegistry $doctrine): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$operatingSystem->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+        if ($this->isCsrfTokenValid('delete' . $operatingSystem->getId(), $request->request->get('_token'))) {
+            $entityManager = $doctrine->getManager();
             $entityManager->remove($operatingSystem);
             $entityManager->flush();
         }
