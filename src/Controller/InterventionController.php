@@ -6,6 +6,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Util\AtediHelper;
 use App\Entity\BillingLine;
+use App\Entity\Client;
 use App\Entity\Intervention;
 use App\Form\BillingLineType;
 use App\Form\InterventionType;
@@ -82,6 +83,8 @@ class InterventionController extends AbstractController
             $em->persist($intervention);
             $em->flush();
 
+            $this->sendInvoiceToDolibarr($intervention);
+
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
             ]);
@@ -95,6 +98,7 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
+        $body = json_encode([""]);
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
             ''
         ]]);
@@ -104,11 +108,26 @@ class InterventionController extends AbstractController
         }
     }
 
-    private function createThirdParty()
+    private function checkIfThirdPartyExists(Client $client): bool
     {
-        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", ['json' => [
-            ''
-        ]]);
+        $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
+        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "invoices", ['json' => $body]);
+        if ($response->getStatusCode() == 404) {
+            return false;
+        }
+        return true;
+    }
+
+    private function createThirdParty(Client $client)
+    {
+        $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
+        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
+            'json' =>
+            $body
+        ]);
+        if ($response->getStatusCode() == 200) {
+            echo "tiers ajouté.";
+        }
     }
 
     /**
