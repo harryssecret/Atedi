@@ -27,6 +27,7 @@ use App\Repository\SoftwareInterventionReportRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Error;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -37,12 +38,13 @@ class InterventionController extends AbstractController
     private AtediHelper $atediHelper;
     private HttpClientInterface $client;
     private string $dolibarrApiUrl;
+    private $params;
 
-    public function __construct(AtediHelper $AtediHelper, HttpClientInterface $client)
+    public function __construct(AtediHelper $AtediHelper, HttpClientInterface $client, ContainerBagInterface $params)
     {
         $this->atediHelper = $AtediHelper;
         $this->client = $client;
-        $dolibarrApiUrl = $this->getParameter("DOLIBARR_API_URL");
+        $this->params = $params;
     }
 
     /**
@@ -60,8 +62,6 @@ class InterventionController extends AbstractController
      */
     public function new(Request $request, ClientRepository $cr, EntityManagerInterface $em): Response
     {
-
-
         $intervention = new Intervention();
         $interventionReport = new InterventionReport();
 
@@ -95,7 +95,7 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
-        $response = $this->client->request("POST", $this->dolibarrApiUrl . "/invoices", ['json' => [
+        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
             ''
         ]]);
         if ($response->getStatusCode() == 200) {
@@ -106,7 +106,7 @@ class InterventionController extends AbstractController
 
     private function createThirdParty()
     {
-        $response = $this->client->request("POST", $this->dolibarrApiUrl . "/thirdparties", ['json' => [
+        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", ['json' => [
             ''
         ]]);
     }
