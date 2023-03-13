@@ -98,7 +98,9 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
-        $body = json_encode([""]);
+        if ($this->doesThirdPartyExists($intervention->getClient())) {
+        }
+        $body = json_encode([]);
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
             ''
         ]]);
@@ -108,7 +110,7 @@ class InterventionController extends AbstractController
         }
     }
 
-    private function checkIfThirdPartyExists(Client $client): bool
+    private function doesThirdPartyExists(Client $client): bool
     {
         $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
         $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "invoices", ['json' => $body]);
@@ -118,7 +120,7 @@ class InterventionController extends AbstractController
         return true;
     }
 
-    private function createThirdParty(Client $client)
+    private function createThirdParty(Client $client): void
     {
         $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
