@@ -1,0 +1,29 @@
+version: "3"
+
+volumes:
+    db:
+
+services:
+    db:
+        image: mariadb:latest
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: dolibarr
+        ports:
+            - "3306:3306"
+        volumes:
+            - db:/var/lib/mysql
+
+    web:
+        image: tuxgasy/dolibarr:16
+        environment:
+            DOLI_DB_HOST: db
+            DOLI_DB_USER: root
+            DOLI_DB_PASSWORD: root
+            DOLI_DB_NAME: dolibarr
+            DOLI_URL_ROOT: 'http://127.0.0.1:8080'
+            PHP_INI_DATE_TIMEZONE: 'Europe/Paris'
+        ports:
+            - "8080:80"
+        links:
+            - db
