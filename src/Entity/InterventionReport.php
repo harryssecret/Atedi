@@ -82,7 +82,6 @@ class InterventionReport
 
     public function __construct()
     {
-        $this->softwares = new ArrayCollection();
         $this->booklets = new ArrayCollection();
         $this->actions = new ArrayCollection();
         $this->softwareInterventionReports = new ArrayCollection();

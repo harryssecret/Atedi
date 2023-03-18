@@ -98,16 +98,42 @@ class InterventionController extends AbstractController
 
     private function sendInvoiceToDolibarr(Intervention $intervention): void
     {
-        if ($this->doesThirdPartyExists($intervention->getClient())) {
+        $client = $intervention->getClient();
+
+        if (!isset($client)) {
+            throw new Error("A client was not set in your query.");
         }
+
+        if (!$this->doesThirdPartyExists($intervention->getClient())) {
+            $this->createThirdParty($client);
+        }
+
         $body = json_encode([]);
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
-            ''
+            $body
         ]]);
-        if ($response->getStatusCode() == 200) {
+        $statusCode = $response->getStatusCode();
+        if ($statusCode == 200) {
             echo "Facture créée.";
-        } else {
+            return;
         }
+
+        throw new Error("Impossible to send the invoice to Dolibarr : got $statusCode");
+    }
+
+    private function getThirdPartyIdPerName(string $name): int|null
+    {
+        $dolibarrSqlReq = "t.nom = $name, t.";
+        $body = json_encode(["limit" => "1", "sqlfilters" => $dolibarrSqlReq]);
+        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/thirdparties", ['json' => $body]);
+        $decodedPayload = $response->toArray();
+        $thirdParty = $decodedPayload[0];
+
+        if (!isset($thirdParty)) {
+            return (int) $thirdParty->id;
+        }
+
+        return null;
     }
 
     private function doesThirdPartyExists(Client $client): bool
@@ -127,9 +153,12 @@ class InterventionController extends AbstractController
             'json' =>
             $body
         ]);
-        if ($response->getStatusCode() == 200) {
+        $statusCode = $response->getStatusCode();
+        if ($statusCode == 200) {
             echo "tiers ajouté.";
+            return;
         }
+        throw new Error("Impossible to create the client : got a $statusCode response from the server.");
     }
 
     /**
