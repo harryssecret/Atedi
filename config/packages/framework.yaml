@@ -16,8 +16,8 @@ framework:
       dolibarr_api:
         base_uri: "%env(DOLIBARR_API_URL)%"
         headers:
-          DOLAPIKEY: "%env(DOLIBARR_KEY)%"
-          Accept: "application/json"
+          "DOLAPIKEY": "%env(DOLIBARR_KEY)%"
+          "Accept": "application/json"
 
   #esi: true
   #fragments: true
