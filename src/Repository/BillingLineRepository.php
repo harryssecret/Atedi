@@ -19,7 +19,7 @@ class BillingLineRepository extends ServiceEntityRepository
         parent::__construct($registry, BillingLine::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],
@@ -33,8 +33,7 @@ class BillingLineRepository extends ServiceEntityRepository
             ->andWhere('bl.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
 
     public function findAllByIntervention($id)
@@ -43,7 +42,6 @@ class BillingLineRepository extends ServiceEntityRepository
             ->andWhere("bl.intervention = :id")
             ->setParameter('id', $id)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 }

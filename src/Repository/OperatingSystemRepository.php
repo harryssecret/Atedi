@@ -19,7 +19,7 @@ class OperatingSystemRepository extends ServiceEntityRepository
         parent::__construct($registry, OperatingSystem::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],

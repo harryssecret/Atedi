@@ -19,7 +19,7 @@ class SoftwareRepository extends ServiceEntityRepository
         parent::__construct($registry, Software::class);
     }
 
-    public function findAll()
+    public function findAll(): array
     {
         return $this->findBy(
             [],
@@ -34,8 +34,7 @@ class SoftwareRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->orderBy('s.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     public function findOneById($id)
@@ -44,7 +43,6 @@ class SoftwareRepository extends ServiceEntityRepository
             ->andWhere('s.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
-            ->getSingleResult()
-        ;
+            ->getSingleResult();
     }
 }
