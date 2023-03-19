@@ -62,12 +62,12 @@ class CheckInvoiceCreationProcessTest extends KernelTestCase
 
         $invoiceId = $dolibarrApiService->sendInvoiceToDolibarr($intervention);
 
-        if (!isset($invoice)) {
+        if (!isset($invoiceId)) {
             throw new Error("Invoice was not inserted.");
         }
 
         $invoice = $dolibarrApiService->getInvoice($invoiceId);
 
-        $this->assertTrue(isset($invoice));
+        $this->assertArrayHasKey("ref", $invoice);
     }
 }

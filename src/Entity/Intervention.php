@@ -32,7 +32,7 @@ class Intervention
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private string $comment;
+    private $comment;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\OperatingSystem", inversedBy="interventions")

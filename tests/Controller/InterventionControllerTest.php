@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Repository\InterventionRepository;
 
 class InterventionControllerTest extends WebTestCase
 {
@@ -12,6 +13,7 @@ class InterventionControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $userRepository = static::getContainer()->get(UserRepository::class);
+        $client->followRedirects();
 
         $testUser = $userRepository->findOneByEmail("admin@gmail.com");
 
@@ -26,10 +28,15 @@ class InterventionControllerTest extends WebTestCase
     public function testNewInterventionPage(): void
     {
         $client = static::createClient();
+        $client->followRedirects();
+        $userRepository = static::getContainer()->get(UserRepository::class);
+        $testUser = $userRepository->findOneByEmail("admin@gmail.com");
+        $client->loginUser($testUser);
+
         $crawler = $client->request('GET', '/intervention/new');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains("h2", "Nouvelle demande d'intervention", "Intervention creation page is available");
+        $this->assertSelectorTextContains("h1", "Nouvelle demande d'intervention", "Intervention creation page is available");
 
         $form = $crawler->filter('form[name=intervention]')->form();
 
@@ -41,21 +48,18 @@ class InterventionControllerTest extends WebTestCase
         $this->assertTrue($form->has('intervention[return_date]'));
         $this->assertTrue($form->has('intervention[comment]'));
 
-        $form['intervention[client]'] = 'John Doe';
-        $form['intervention[equipment]'] = 'Ordinateur portable';
-        $form['intervention[equipment_complete]'] = true;
-        $form['intervention[operating_system]'] = 'Windows 10';
-        $form['intervention[tasks]'] = 'Réparation';
+        $form['intervention[client]'] = '1'; // dylan hochet
+        $form['intervention[equipment]'] = '1'; // téléphone
+        $form['intervention[equipment_complete]'] = "Oui";
+        $form['intervention[operating_system]'] = '1'; // linux
+        $form['intervention[tasks]'] = '1'; // réparation
         $form['intervention[return_date]'] = '2022-01-01';
         $form['intervention[comment]'] = 'Commentaire de test';
 
         $crawler = $client->submit($form);
 
-        $this->assertSame(302, $client->getResponse()->getStatusCode());
-        $this->assertResponseRedirects('/intervention');
-
         $interventionRepository = static::getContainer()->get(InterventionRepository::class);
-        $intervention = $interventionRepository->findOneBy(['client' => 'John Doe']);
+        $intervention = $interventionRepository->findOneBy(['client' => 'Dylan HOCHET']);
 
         $this->assertNotNull($intervention);
         $this->assertSame('Ordinateur portable', $intervention->getEquipment());

@@ -79,7 +79,7 @@ class InterventionController extends AbstractController
 
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
-            ]);
+            ], 302);
         }
 
         return $this->render('intervention/new.html.twig', [
@@ -497,15 +497,11 @@ class InterventionController extends AbstractController
                     ]);
                 }
                 break;
-
             case 7:
                 $interventionReport->setComment(NULL);
-
                 if ($request->request->has('data')) {
-
                     if ($request->request->has('comment')) {
                         $comment = $request->request->get('comment');
-
                         $interventionReport->setComment($comment);
                     }
                     $interventionReport->setStep($step + 1);
@@ -517,14 +513,11 @@ class InterventionController extends AbstractController
                     ]);
                 }
                 break;
-
             case 8:
                 if ($request->request->has('delete-billing-line')) {
                     $billingLineId = $request->request->get('billing-line-id');
-
                     $billingLine = $blr->findOneById($billingLineId);
                     $intervention->removeBillingLine($billingLine);
-
                     $totalPrice = $this->atediHelper->strTotalPrice($intervention);
                     $intervention->setTotalPrice($totalPrice);
 

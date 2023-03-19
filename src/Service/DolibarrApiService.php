@@ -59,7 +59,7 @@ class DolibarrApiService
 
     public function createThirdParty(Client $client): void
     {
-        $body = ["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . " " . $client->getFirstName(), "phone" => $client->getPhone(), "client" => 1];
+        $body = ["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getFirstName() . " " . $client->getLastName(), "phone" => $client->getPhone(), "client" => 1];
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
             'json' =>
             $body,
@@ -90,19 +90,18 @@ class DolibarrApiService
             throw new Error("Impossible to get third party id with phone number.");
         }
 
-        $body = ["socid" => $clientId, 'date' => $intervention->getDepositDate()->format('Y-m-d'), "type" => 0];
+        $body = ["socid" => "$clientId", 'date' => $intervention->getDepositDate()->format('Y-m-d'), "type" => 0];
 
-        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
+        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", [
+            'json' =>
             $body
-        ]]);
+        ]);
 
         $statusCode = $response->getStatusCode();
 
         if ($statusCode !== 200) {
             throw new Error("Impossible to send the invoice to Dolibarr : got $statusCode");
         }
-
-        echo "Facture créée.";
 
         return $response->getContent();
     }
@@ -118,7 +117,20 @@ class DolibarrApiService
 
     public function doesThirdPartyExists(Client $client): bool
     {
-        $query = ["sqlfilters" => "t.nom='" . $client->getLastName() . " " . $client->getFirstName() . "' AND t.phone='" . $client->getPhone() . "'"];
+        $isClientNameSet = $client->getLastName() !== null and $client->getFirstName() !== null;
+        $clientPhoneNumber = $client->getPhone();
+
+        $query = [];
+
+        if ($isClientNameSet and isset($clientPhoneNumber)) {
+            $clientfullName = $client->getFirstName() . " " . $client->getLastName();
+            $query = ["sqlfilters" => "t.nom='" . $clientfullName . "' AND t.phone='" . $clientPhoneNumber . "'"];
+        } elseif (!$isClientNameSet and isset($clientPhoneNumber)) {
+            $query = ["sqlfilters" => "t.phone=" . $client->getPhone()];
+        } else {
+            throw new Error("Impossible to send third party to Dolibarr since client name and/or phone are null.");
+        }
+
         $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
             'query' => $query
         ]);
