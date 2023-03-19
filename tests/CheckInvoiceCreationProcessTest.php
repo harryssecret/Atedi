@@ -3,7 +3,9 @@
 namespace App\Tests;
 
 use App\Entity\Client;
+use App\Entity\Intervention;
 use App\Service\DolibarrApiService;
+use DateTimeImmutable;
 use Error;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -13,10 +15,6 @@ class CheckInvoiceCreationProcessTest extends KernelTestCase
 {
     public function testIfAbleToCreateCustomer(): void
     {
-        $kernel = self::bootKernel();
-
-        $this->assertSame('test', $kernel->getEnvironment());
-
         $dolibarrApiService = static::getContainer()->get(DolibarrApiService::class);
 
         if (!isset($dolibarrApiService)) {
@@ -43,8 +41,33 @@ class CheckInvoiceCreationProcessTest extends KernelTestCase
             throw new Error("Impossible to get user from Dolibarr");
         }
 
-        var_dump($clientInDolibarr);
-
         assertEquals($clientId, $clientInDolibarr["id"], "can query third party");
+    }
+
+    public function testIfAbleToCreateInvoice(): void
+    {
+        $dolibarrApiService = static::getContainer()->get(DolibarrApiService::class);
+
+        if (!isset($dolibarrApiService)) {
+            throw new Error("Impossible to get Dolibarr API Service.");
+        }
+
+        $newClient = new Client();
+        $newClient->setPhone("0612345678");
+
+        $intervention = new Intervention();
+        $intervention->setDepositDate(new DateTimeImmutable());
+        $intervention->setTotalPrice("10.00€");
+        $intervention->setClient($newClient);
+
+        $invoiceId = $dolibarrApiService->sendInvoiceToDolibarr($intervention);
+
+        if (!isset($invoice)) {
+            throw new Error("Invoice was not inserted.");
+        }
+
+        $invoice = $dolibarrApiService->getInvoice($invoiceId);
+
+        $this->assertTrue(isset($invoice));
     }
 }

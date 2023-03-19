@@ -17,7 +17,7 @@ class Intervention
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="datetime")
@@ -32,7 +32,7 @@ class Intervention
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $comment;
+    private string $comment;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\OperatingSystem", inversedBy="interventions")
@@ -56,28 +56,28 @@ class Intervention
      * @ORM\ManyToOne(targetEntity="App\Entity\Client", inversedBy="interventions")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $client;
+    private Client $client;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $status;
+    private string $status;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $equipment_complete;
+    private string $equipment_complete;
 
     /**
      * @ORM\OneToOne(targetEntity=InterventionReport::class, inversedBy="intervention", cascade={"persist", "remove"})
      * @ORM\JoinColumn(nullable=false)
      */
-    private $intervention_report;
+    private InterventionReport $intervention_report;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $total_price;
+    private string $total_price;
 
     /**
      * @ORM\OneToMany(targetEntity=BillingLine::class, mappedBy="intervention")
@@ -92,7 +92,7 @@ class Intervention
         $this->setStatus('En attente');
         $this->billing_lines = new ArrayCollection();
     }
-    
+
 
     public function getId(): ?int
     {
