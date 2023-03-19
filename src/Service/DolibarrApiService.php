@@ -40,7 +40,6 @@ class DolibarrApiService
         $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/thirdparties", ['query' => $query]);
         $decodedPayload = $response->toArray();
         $thirdParty = $decodedPayload[0];
-        var_dump($thirdParty);
 
         if (isset($thirdParty)) {
             return (int) $thirdParty["id"];
@@ -73,7 +72,7 @@ class DolibarrApiService
         throw new Error("Impossible to create the client : got a $statusCode response from the server.");
     }
 
-    public function sendInvoiceToDolibarr(Intervention $intervention): void
+    public function sendInvoiceToDolibarr(Intervention $intervention): ?int
     {
         $client = $intervention->getClient();
 
@@ -85,24 +84,41 @@ class DolibarrApiService
             $this->createThirdParty($client);
         }
 
-        $body = [];
+        $clientId = $this->getThirdPartyIdPerPhoneNumber($client->getPhone());
+
+        if (!isset($clientId)) {
+            throw new Error("Impossible to get third party id with phone number.");
+        }
+
+        $body = ["socid" => $clientId, 'date' => $intervention->getDepositDate()->format('Y-m-d'), "type" => 0];
+
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
             $body
         ]]);
+
         $statusCode = $response->getStatusCode();
-        if ($statusCode == 200) {
-            echo "Facture créée.";
-            return;
+
+        if ($statusCode !== 200) {
+            throw new Error("Impossible to send the invoice to Dolibarr : got $statusCode");
         }
 
-        throw new Error("Impossible to send the invoice to Dolibarr : got $statusCode");
+        echo "Facture créée.";
+
+        return $response->getContent();
+    }
+
+    public function getInvoice(int $id): ?array
+    {
+        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/invoices/$id");
+        if ($response->getStatusCode() !== 200) {
+            return null;
+        }
+        return $response->toArray();
     }
 
     public function doesThirdPartyExists(Client $client): bool
     {
         $query = ["sqlfilters" => "t.nom='" . $client->getLastName() . " " . $client->getFirstName() . "' AND t.phone='" . $client->getPhone() . "'"];
-
-
         $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
             'query' => $query
         ]);
