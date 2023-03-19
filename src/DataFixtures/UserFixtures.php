@@ -15,15 +15,15 @@ class UserFixtures extends Fixture
     {
         $this->passwordEncoder = $passwordEncoder;
     }
-    
+
     public function load(ObjectManager $manager)
     {
         $data = new User();
         $data->setEmail('admin@gmail.com');
         $data->setRoles(['ROLE_ADMIN']);
-        $data->setPassword($this->passwordEncoder->encodePassword($data,'admin'));
-        $manager->persist($data);
+        $data->setPassword($this->passwordEncoder->encodePassword($data, 'admin'));
 
+        $manager->persist($data);
         $manager->flush();
     }
 }
