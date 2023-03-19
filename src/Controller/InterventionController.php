@@ -6,7 +6,6 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Util\AtediHelper;
 use App\Entity\BillingLine;
-use App\Entity\Client;
 use App\Entity\Intervention;
 use App\Form\BillingLineType;
 use App\Form\InterventionType;
@@ -20,7 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\BillingLineRepository;
 use App\Entity\SoftwareInterventionReport;
 use App\Repository\InterventionRepository;
-use App\Repository\SettingsRepository;
+use App\Service\DolibarrApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,8 +27,6 @@ use App\Repository\SoftwareInterventionReportRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Error;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("/intervention")
@@ -37,15 +34,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class InterventionController extends AbstractController
 {
     private AtediHelper $atediHelper;
-    private HttpClientInterface $client;
-    private string $dolibarrApiUrl;
-    private $params;
 
-    public function __construct(AtediHelper $AtediHelper, HttpClientInterface $client, ContainerBagInterface $params)
+    public function __construct(AtediHelper $AtediHelper)
     {
         $this->atediHelper = $AtediHelper;
-        $this->client = $client;
-        $this->params = $params;
     }
 
     /**
@@ -61,7 +53,7 @@ class InterventionController extends AbstractController
     /**
      * @Route("/new", name="intervention_new", methods={"GET","POST"})
      */
-    public function new(Request $request, ClientRepository $cr, EntityManagerInterface $em): Response
+    public function new(Request $request, ClientRepository $cr, EntityManagerInterface $em, DolibarrApiService $dolibarrApiService): Response
     {
         $intervention = new Intervention();
         $interventionReport = new InterventionReport();
@@ -83,7 +75,7 @@ class InterventionController extends AbstractController
             $em->persist($intervention);
             $em->flush();
 
-            $this->sendInvoiceToDolibarr($intervention);
+            $dolibarrApiService->sendInvoiceToDolibarr($intervention);
 
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
@@ -94,71 +86,6 @@ class InterventionController extends AbstractController
             'intervention' => $intervention,
             'form' => $form->createView(),
         ]);
-    }
-
-    private function sendInvoiceToDolibarr(Intervention $intervention): void
-    {
-        $client = $intervention->getClient();
-
-        if (!isset($client)) {
-            throw new Error("A client was not set in your query.");
-        }
-
-        if (!$this->doesThirdPartyExists($intervention->getClient())) {
-            $this->createThirdParty($client);
-        }
-
-        $body = json_encode([]);
-        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", ['json' => [
-            $body
-        ]]);
-        $statusCode = $response->getStatusCode();
-        if ($statusCode == 200) {
-            echo "Facture créée.";
-            return;
-        }
-
-        throw new Error("Impossible to send the invoice to Dolibarr : got $statusCode");
-    }
-
-    private function getThirdPartyIdPerName(string $name): int|null
-    {
-        $dolibarrSqlReq = "t.nom = $name, t.";
-        $body = json_encode(["limit" => "1", "sqlfilters" => $dolibarrSqlReq]);
-        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "/thirdparties", ['json' => $body]);
-        $decodedPayload = $response->toArray();
-        $thirdParty = $decodedPayload[0];
-
-        if (!isset($thirdParty)) {
-            return (int) $thirdParty->id;
-        }
-
-        return null;
-    }
-
-    private function doesThirdPartyExists(Client $client): bool
-    {
-        $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
-        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url") . "invoices", ['json' => $body]);
-        if ($response->getStatusCode() == 404) {
-            return false;
-        }
-        return true;
-    }
-
-    private function createThirdParty(Client $client): void
-    {
-        $body = json_encode(["firstname" => $client->getFirstName(), "lastname" => $client->getLastName(), "name" => $client->getLastName() . $client->getFirstName(), "phone" => $client->getPhone()]);
-        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/thirdparties", [
-            'json' =>
-            $body
-        ]);
-        $statusCode = $response->getStatusCode();
-        if ($statusCode == 200) {
-            echo "tiers ajouté.";
-            return;
-        }
-        throw new Error("Impossible to create the client : got a $statusCode response from the server.");
     }
 
     /**
