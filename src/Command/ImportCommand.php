@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use PhpMyAdmin\SqlParser\Parser;
+use PhpMyAdmin\SqlParser\Utils\Query;
 
 #[AsCommand(
     name: 'atedi:import',
@@ -34,8 +36,18 @@ class ImportCommand extends Command
             $output->writeln("Importation du fichier suivant: $dbFile");
         }
 
+        $query = 'SELECT * FROM helico';
+        $parser = new Parser($query);
+
+        $output->writeln(Query::getFlags($parser->statements[0]->build()));
+
         $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
         return Command::SUCCESS;
+    }
+
+    private function readSqlScript(string $filename) {
+        $sqlScript = fopen($filename, 'r');
+        $line = fgets($filename);
     }
 }
