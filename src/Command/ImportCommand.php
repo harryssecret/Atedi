@@ -48,6 +48,8 @@ class ImportCommand extends Command
 
     private function readSqlScript(string $filename) {
         $sqlScript = fopen($filename, 'r');
-        $line = fgets($filename);
+        $line = fgets($sqlScript);
+        $parser = new Parser($line);
+        $flags = Query::getFlags()
     }
 }
