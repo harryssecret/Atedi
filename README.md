@@ -23,33 +23,34 @@ composer install
 ```
 
 ### Database creation
-Make sure to have MySQL installed on your machine, and create a dedicated database and user
+First, make sure to have MySQL installed on your machine and is up running.
+
+Copy .env file to .env.local and update them with your database credentials :
+```
+DATABASE_URL=mysql://changeme:changeme@127.0.0.1:3306/atedi
+```
 
 ```sql
 CREATE DATABASE atedi;
 CREATE USER 'atediUser'@'localhost' IDENTIFIED BY 'changethispass';
 GRANT ALL PRIVILEGES ON atedi.* TO 'atediUser'@'localhost';
 FLUSH PRIVILEGES; 
-```
+``` 
+or use `composer bin/console d:d:c`
 
-Copy .env file to .env.local and update them with your database credentials :
-```
-DATABASE_URL=mysql://changeme:changeme@127.0.0.1:3306/atedi
-```
-Then, apply the migrations :
+Then, apply migrations :
 ```bash
-# php bin/console doctrine:database:create // unecessary if you have created the database
 php bin/console doctrine:migrations:migrate
 ```
 
-Atedi comes with some test data that you can load to play with the software, you just nedd to run the following command.
+Atedi comes with some test data that you can load to play with the software, you just need to run the following command.
 ```bash
 php bin/console doctrine:fixtures:load
 ```
 
 ### Launch it
-Once you've installed everything, execute this line in the atedi directory :
+Once everything is installed, use the built in php dev server (not recommended for production, use caddy, nginx or apache) :
 ```
 php -S localhost:8000 -t public
 ```
-Then, go the the url you've chosen and login with the following credentials : `admin@gmail.com` / `admin`. Don't forget to change the default password.
+Then, login with the defaults credentials : `admin@gmail.com` / `admin`.

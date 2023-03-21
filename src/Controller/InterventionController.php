@@ -75,8 +75,6 @@ class InterventionController extends AbstractController
             $em->persist($intervention);
             $em->flush();
 
-            $dolibarrApiService->sendInvoiceToDolibarr($intervention);
-
             return $this->redirectToRoute('intervention_show', [
                 'id' => $intervention->getId(),
             ], 302);
@@ -91,7 +89,7 @@ class InterventionController extends AbstractController
     /**
      * @Route("/{id}", name="intervention_show", methods={"GET","POST"})
      */
-    public function show(Request $request, Intervention $intervention, EntityManagerInterface $em, SoftwareRepository $sr, ActionRepository $ar, SoftwareInterventionReportRepository $sirr): Response
+    public function show(Request $request, Intervention $intervention, DolibarrApiService $dolibarrApiService, EntityManagerInterface $em, SoftwareRepository $sr, ActionRepository $ar, SoftwareInterventionReportRepository $sirr): Response
     {
         $em = $em;
         $theStatus = $intervention->getStatus();
@@ -121,6 +119,9 @@ class InterventionController extends AbstractController
                             $intervention->setStatus($newStatus);
                             $em->persist($intervention);
                             $em->flush();
+
+                            $dolibarrApiService->sendInvoiceToDolibarr($intervention);
+
                             return $this->redirectToRoute('index');
                         }
                         break;
