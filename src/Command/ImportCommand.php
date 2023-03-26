@@ -21,8 +21,7 @@ class ImportCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('db_file', InputArgument::OPTIONAL, 'location of the database file')
-        ;
+            ->addArgument('db_file', InputArgument::OPTIONAL, 'location of the database file');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -30,12 +29,14 @@ class ImportCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $dbFile = $input->getArgument('db_file');
 
-        if ($dbFile) {
-            $output->writeln("Importation du fichier suivant: $dbFile");
+
+        if (!isset($dbFile)) {
+            $io->writeln("Veuillez vérifier la syntaxe de la commande. Faites `php bin/console at:i --help` pour voir l'aide.");
+            return Command::INVALID;
         }
 
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
-
+        $output->writeln("Importation du fichier suivant: $dbFile");
+        $io->success("Import complété. Veuillez vérifier vos tables au cas où ;)");
         return Command::SUCCESS;
     }
 }
