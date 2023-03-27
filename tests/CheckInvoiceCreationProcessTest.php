@@ -70,4 +70,8 @@ class CheckInvoiceCreationProcessTest extends KernelTestCase
 
         $this->assertArrayHasKey("ref", $invoice);
     }
+
+    public function testIfAbleToCreateProduct() {
+        
+    }
 }

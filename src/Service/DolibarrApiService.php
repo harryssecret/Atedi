@@ -143,19 +143,21 @@ class DolibarrApiService
 
     public function createProduct(Task $task) {
         $body = [
-            "name" => $task->getTitle(),
-            "desc" => $task->getTitle(),
-            "price" => $task->getPrice(),
+            "ref" => $task->getTitle(),
+            "label" => $task->getTitle(),
+            "total_ht" => $task->getPrice(),
         ];
+
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url"). "/products", [
             'json' =>
             $body
         ]);
+        
         $statusCode = $response->getStatusCode();
-        if ($statusCode == 200) {
-            return $response->toArray();
+        if ($statusCode !== 200) {
+            return null;
         }
-        return null;
+        return $response->getContent();
     }
 
     public function getInvoice(int $id): ?array
