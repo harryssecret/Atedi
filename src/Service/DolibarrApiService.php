@@ -94,6 +94,8 @@ class DolibarrApiService
         $body = ["socid" => "$clientId", 'date' => $intervention->getDepositDate()->format('Y-m-d'), "type" => 0];
 
         $tasks = $intervention->getTasks();
+
+        $lines = [];
         
         if ($tasks) {
             foreach ($tasks as $task) {
@@ -101,8 +103,9 @@ class DolibarrApiService
                 if (!isset($productId)) {
                     $productId = $this->createProduct($task);
                 }
-                $body["lines"] = ["desc" => $task->getTitle(), "qty" => 1, "tva_tx" => 20.0, "subprice" => $task->getPrice(), "fk_product" => $productId];
+                $lines[] = ["desc" => $task->getTitle(), "qty" => 1, "tva_tx" => 20.0, "subprice" => $task->getPrice(), "fk_product" => $productId];
             }
+            $body["lines"] = $lines;
             var_dump($body["lines"]);
         }
 
