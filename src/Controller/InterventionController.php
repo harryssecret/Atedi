@@ -230,8 +230,6 @@ class InterventionController extends AbstractController
      */
     public function report(Request $request, EntityManagerInterface $em, Intervention $intervention, SoftwareRepository $sr, BookletRepository $br, ActionRepository $ar, SoftwareInterventionReportRepository $sirr, BillingLineRepository $blr, TechnicianRepository $tr): Response
     {
-        $em = $em;
-
         $interventionReport = $intervention->getInterventionReport();
         $step = $interventionReport->getStep();
 

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Task;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\Intervention;
@@ -92,6 +93,19 @@ class DolibarrApiService
 
         $body = ["socid" => "$clientId", 'date' => $intervention->getDepositDate()->format('Y-m-d'), "type" => 0];
 
+        $tasks = $intervention->getTasks();
+        
+        if ($tasks) {
+            foreach ($tasks as $task) {
+                $productId = $this->getProductIdPerDesc($task->getTitle());
+                if (!isset($productId)) {
+                    $productId = $this->createProduct($task);
+                }
+                $body["lines"] = ["desc" => $task->getTitle(), "qty" => 1, "tva_tx" => 20.0, "subprice" => $task->getPrice(), "fk_product" => $productId];
+            }
+            var_dump($body["lines"]);
+        }
+
         $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url") . "/invoices", [
             'json' =>
             $body
@@ -104,6 +118,41 @@ class DolibarrApiService
         }
 
         return $response->getContent();
+    }
+
+    public function getProductIdPerDesc(string $desc): ?int {
+        $query = ["sqlfilters" => "t.label='" . $desc . "'"];
+        $response = $this->client->request("GET", $this->params->get("app.dolibarr_api_url"). "/products", ['query' => $query]);
+
+        if ($response->getStatusCode() !== 200) {
+            return null;
+        }
+
+        $decodedPayload = $response->toArray();
+        $product = $decodedPayload[0];
+
+        if (isset($product)) {
+            return (int) $product["id"];
+        }
+
+        return null;
+    }
+
+    public function createProduct(Task $task) {
+        $body = [
+            "name" => $task->getTitle(),
+            "desc" => $task->getTitle(),
+            "price" => $task->getPrice(),
+        ];
+        $response = $this->client->request("POST", $this->params->get("app.dolibarr_api_url"). "/products", [
+            'json' =>
+            $body
+        ]);
+        $statusCode = $response->getStatusCode();
+        if ($statusCode == 200) {
+            return $response->toArray();
+        }
+        return null;
     }
 
     public function getInvoice(int $id): ?array
